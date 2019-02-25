@@ -26,6 +26,10 @@ def list_name_error(list_name)
   end
 end
 
+get "/lists" do
+  erb :lists, layout: :layout
+end
+
 post "/lists" do
   list_name = @params['list_name'].strip
   error = list_name_error(list_name)
@@ -49,13 +53,22 @@ get "/lists/:list_id" do
   erb :single_list, layout: :layout
 end
 
-post "/lists/:list_id" do
-  
+post "/lists/:list_id/edit_list" do
+  error = list_name_error @params['list_name']
+
+  if error
+    session[:error] = error
+    erb :new_list, layout: :layout
+  else
+    list = session[:lists][@params['list_id'].to_i]
+    list[:name] = @params['list_name']
+    session[:success] = "The list has been renamed."
+    redirect "/lists"
+  end
 end
 
-get "/lists" do
-  erb :lists, layout: :layout
+get "/lists/:list_id/edit_list" do
+  @list = @lists[@params["list_id"].to_i]
+  erb :edit_list, layout: :layout
 end
-
-
 

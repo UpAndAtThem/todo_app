@@ -1,0 +1,18 @@
+<form action="/lists/<%= @params['list_id']%>/edit_list" method="post">
+  <dl>
+    <dt>
+      <label for="list_name">Enter the new name for your list:</label>
+    </dt>
+    <dd>
+      <input name="list_name" placeholder="<%= @list[:name] %>" type="text" value="">
+    </dd>
+  </dl>
+  <fieldset class="actions">
+    <input type="submit" value="Save">
+    <a href="/lists/<%= @params['list_id'] %>">Cancel</a>
+  </fieldset>
+</form>
+
+<% content_for :header_links do %>
+  <a href="/lists">All Lists</a>
+<% end %>
