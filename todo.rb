@@ -26,6 +26,12 @@ def list_name_error(list_name)
   end
 end
 
+def todo_name_error(todo)
+  if !(1..100).cover? todo.size
+    "Todo must be between 1 and 100 characters"
+  end 
+end
+
 get "/lists" do
   erb :lists, layout: :layout
 end
@@ -49,7 +55,8 @@ get "/lists/new" do
 end
 
 get "/lists/:list_id" do
-  @list = @lists[@params['list_id'].to_i]
+  @list_id = params['list_id'].to_i
+  @list = @lists[@list_id]
   erb :single_list, layout: :layout
 end
 
@@ -67,8 +74,34 @@ post "/lists/:list_id/edit_list" do
   end
 end
 
+
 get "/lists/:list_id/edit_list" do
   @list = @lists[@params["list_id"].to_i]
   erb :edit_list, layout: :layout
+end
+
+# deletes a list
+post "/lists/:list_id/delete" do
+  session["success"] = "The list has been deleted" 
+  @deleted = @lists.delete_at params['list_id'].to_i
+  redirect "/lists"
+end
+
+# add a new todo to a list
+post "/lists/:list_id/todos" do
+  @list_id = params['list_id'].to_i
+  @list = session[:lists][@list_id]
+  @new_todo = params['todo'].strip
+
+  error = todo_name_error @new_todo
+
+  if error
+    session[:error] = error
+    erb :single_list, layout: :layout
+  else
+    @list[:todos] << { name: @new_todo, completed: false }
+    session[:success] = "The todo item has been added."
+    redirect "/lists/#{params['list_id']}"
+  end
 end
 
