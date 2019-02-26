@@ -42,8 +42,17 @@ def uncompleted_todos_count list
   remaining + " / " +total_todos
 end
 
+def todos_completed?(list)
+  has_todos?(list[:todos]) &&
+  all_todos_complete?(list[:todos])
+end
+
 def all_todos_complete?(todos)
   todos.all? { |todo| todo[:completed] }
+end
+
+def has_todos?(todos)
+  todos.count > 0
 end
 
 get "/lists" do
