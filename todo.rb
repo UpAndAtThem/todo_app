@@ -21,7 +21,7 @@ end
 def list_name_error(list_name)
   if !(1..100).cover? list_name.size
     "List name must be between 1 and 100 characters"
-  elsif session[:lists].any? { |list| list[:name] == list_name}
+  elsif session[:lists].any? { |list| list[:name] == list_name }
     "List name must be unique"
   end
 end
@@ -30,6 +30,10 @@ def todo_name_error(todo)
   if !(1..100).cover? todo.size
     "Todo must be between 1 and 100 characters"
   end 
+end
+
+def toggle(bool)
+  !bool
 end
 
 get "/lists" do
@@ -105,12 +109,18 @@ post "/lists/:list_id/todos" do
   end
 end
 
-post "/lists/:list_id/delete_todo/:todo_id" do
+post "/lists/:list_id/todos/:todo_id/delete_todo" do
   @list_id = params['list_id'].to_i
   @todo_id = params['todo_id'].to_i
 
   @lists[@list_id][:todos].delete_at @todo_id
   session[:success] = "The todo item has been deleted"
   redirect "/lists/" + params['list_id'] 
+end
+
+post "/lists/:list_id/todos/:todo_id/complete_todo" do
+  @todo = @lists[params['list_id'].to_i][:todos][params['todo_id'].to_i]
+  @todo[:completed] = toggle @todo[:completed]
+  redirect "/lists/#{params['list_id']}"
 end
 
