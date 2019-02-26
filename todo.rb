@@ -128,6 +128,12 @@ post "/lists/:list_id/todos/:todo_id/complete_todo" do
 
   @todo = @lists[@list_id][:todos][@todo_id]
   @todo[:completed] = to_bool params['completed']
+  session[:success] = "The todo has been updated"
   redirect "/lists/#{params['list_id']}"
 end
 
+post "/lists/:list_id/todos/mark_all_complete" do
+  @list_id = params['list_id'].to_i
+  @lists[@list_id][:todos].each { |todo| todo[:completed] = true }
+  redirect "/lists/#{@list_id}"
+end
