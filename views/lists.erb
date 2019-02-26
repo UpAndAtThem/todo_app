@@ -1,6 +1,6 @@
 <ul id="lists">
   <% @lists.each_with_index do | list, index| %>
-    <li>
+    <li class="<%= "complete" if all_todos_complete? list[:todos] %>">
       <a href="/lists/<%= index %>">
         <h2><%= list[:name]%></h2>
         <p><%= uncompleted_todos_count list %></p>

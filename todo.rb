@@ -37,7 +37,13 @@ def to_bool(str)
 end
 
 def uncompleted_todos_count list
-  list[:todos].map { |todo| todo[:completed] }.count(false)
+  total_todos = list[:todos].count.to_s
+  remaining = list[:todos].map { |todo| todo[:completed] }.count(false).to_s
+  remaining + " / " +total_todos
+end
+
+def all_todos_complete?(todos)
+  todos.all? { |todo| todo[:completed] }
 end
 
 get "/lists" do
@@ -135,5 +141,6 @@ end
 post "/lists/:list_id/todos/mark_all_complete" do
   @list_id = params['list_id'].to_i
   @lists[@list_id][:todos].each { |todo| todo[:completed] = true }
+  session[:success] = "All todos have been completed"
   redirect "/lists/#{@list_id}"
 end
