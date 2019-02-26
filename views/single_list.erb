@@ -12,7 +12,7 @@
     <% @list[:todos].each_with_index do |todo, index| %>
       <li class="<%= "complete" if todo[:completed] %>">
         <form action="/lists/<%= params['list_id']%>/todos/<%= index%>/complete_todo" method="post" class="check">
-           <input type="hidden" name="completed" value="true" />
+           <input type="hidden" name="completed" value="<%= !todo[:completed]%>" />
            <button type="submit">Complete</button>
         </form>
 

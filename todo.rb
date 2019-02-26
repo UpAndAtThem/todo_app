@@ -32,8 +32,12 @@ def todo_name_error(todo)
   end 
 end
 
-def toggle(bool)
-  !bool
+def to_bool(str)
+  str == 'true'
+end
+
+def uncompleted_todos_count list
+  list[:todos].map { |todo| todo[:completed] }.count(false)
 end
 
 get "/lists" do
@@ -119,8 +123,11 @@ post "/lists/:list_id/todos/:todo_id/delete_todo" do
 end
 
 post "/lists/:list_id/todos/:todo_id/complete_todo" do
-  @todo = @lists[params['list_id'].to_i][:todos][params['todo_id'].to_i]
-  @todo[:completed] = toggle @todo[:completed]
+  @list_id = params['list_id'].to_i
+  @todo_id = params['todo_id'].to_i
+
+  @todo = @lists[@list_id][:todos][@todo_id]
+  @todo[:completed] = to_bool params['completed']
   redirect "/lists/#{params['list_id']}"
 end
 
