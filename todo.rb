@@ -1,8 +1,7 @@
 require "sinatra"
-require "sinatra/reloader"
+require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "tilt/erubis"
-require "pry"
 
 configure do
   enable :sessions
@@ -14,37 +13,48 @@ before do
   session[:lists] ||= []
 end
 
-get "/" do
-  redirect "/lists"
-end
-
-def list_name_error(list_name)
-  if !(1..100).cover? list_name.size
-    "List name must be between 1 and 100 characters"
-  elsif session[:lists].any? { |list| list[:name] == list_name }
-    "List name must be unique"
+helpers do
+  def list_name_error(list_name)
+    if !(1..100).cover? list_name.size
+      "List name must be between 1 and 100 characters"
+    elsif session[:lists].any? { |list| list[:name] == list_name }
+      "List name must be unique"
+    end
   end
-end
+  
+  def todo_name_error(todo)
+    if !(1..100).cover? todo.size
+      "Todo must be between 1 and 100 characters"
+    end 
+  end
+  
+  def to_bool(str)
+    str == 'true'
+  end
+  
+  def uncompleted_todos_count list
+    total_todos = list[:todos].count.to_s
+    remaining = list[:todos].count { |todo| todo[:completed] }.to_s
+    remaining + " / " + total_todos
+  end
+  
+  def list_completed?(list)
+    has_todos?(list[:todos]) && all_todos_complete?(list[:todos])
+  end
 
-def todo_name_error(todo)
-  if !(1..100).cover? todo.size
-    "Todo must be between 1 and 100 characters"
-  end 
-end
+  def sort_lists(lists, &block)
+    complete, incomplete = lists.partition { |list| list_completed? list }
 
-def to_bool(str)
-  str == 'true'
-end
+    incomplete.each { |list| yield list, lists.index(list) }
+    complete.each { |list| yield list, lists.index(list) }
+  end
 
-def uncompleted_todos_count list
-  total_todos = list[:todos].count.to_s
-  remaining = list[:todos].map { |todo| todo[:completed] }.count(false).to_s
-  remaining + " / " +total_todos
-end
+  def sort_todos(list, &block)
+    complete, incomplete = list[:todos].partition { |todo| todo[:completed] }
 
-def todos_completed?(list)
-  has_todos?(list[:todos]) &&
-  all_todos_complete?(list[:todos])
+    incomplete.each { |todo| yield todo, list[:todos].index(todo) }
+    complete.each { |todo| yield todo, list[:todos].index(todo) }
+  end
 end
 
 def all_todos_complete?(todos)
@@ -53,6 +63,10 @@ end
 
 def has_todos?(todos)
   todos.count > 0
+end
+
+get "/" do
+  redirect "/lists"
 end
 
 get "/lists" do
