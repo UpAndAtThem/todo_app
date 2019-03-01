@@ -65,8 +65,12 @@ def has_todos?(todos)
   todos.count > 0
 end
 
+HOME_PAGE = "/lists"
+
+require 'pry'
 get "/" do
-  redirect "/lists"
+  binding.pry
+  redirect HOME_PAGE
 end
 
 get "/lists" do
