@@ -94,7 +94,11 @@ get "/lists/new" do
 end
 
 get "/lists/:list_id" do
-  redirect "/lists" unless @lists[params['list_id'].to_i]
+  unless @lists[params['list_id'].to_i]
+    session[:error] = "The desired list could not be found"
+    redirect "/lists"
+  end
+
   @list_id = params['list_id'].to_i
   @list = @lists[@list_id]
   erb :single_list, layout: :layout
