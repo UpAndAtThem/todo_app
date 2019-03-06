@@ -55,6 +55,14 @@ helpers do
     incomplete.each { |todo| yield todo, list[:todos].index(todo) }
     complete.each { |todo| yield todo, list[:todos].index(todo) }
   end
+
+  def load_list(index)
+    list = @lists[index]
+    return list if list
+
+    session[:error] = "The desired list could not be found"
+    redirect "/lists"
+  end
 end
 
 def all_todos_complete?(todos)
@@ -94,13 +102,9 @@ get "/lists/new" do
 end
 
 get "/lists/:list_id" do
-  unless @lists[params['list_id'].to_i]
-    session[:error] = "The desired list could not be found"
-    redirect "/lists"
-  end
-
+  @list = load_list params['list_id'].to_i
   @list_id = params['list_id'].to_i
-  @list = @lists[@list_id]
+
   erb :single_list, layout: :layout
 end
 
@@ -120,7 +124,7 @@ end
 
 
 get "/lists/:list_id/edit_list" do
-  @list = @lists[@params["list_id"].to_i]
+  @list = load_list params['list_id'].to_i
   erb :edit_list, layout: :layout
 end
 
