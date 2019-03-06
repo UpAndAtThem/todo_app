@@ -67,9 +67,7 @@ end
 
 HOME_PAGE = "/lists"
 
-require 'pry'
 get "/" do
-  binding.pry
   redirect HOME_PAGE
 end
 
@@ -96,6 +94,7 @@ get "/lists/new" do
 end
 
 get "/lists/:list_id" do
+  redirect "/lists" unless @lists[params['list_id'].to_i]
   @list_id = params['list_id'].to_i
   @list = @lists[@list_id]
   erb :single_list, layout: :layout
