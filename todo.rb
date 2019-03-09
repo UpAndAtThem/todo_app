@@ -122,7 +122,6 @@ post "/lists/:list_id/edit_list" do
   end
 end
 
-
 get "/lists/:list_id/edit_list" do
   @list = load_list params['list_id'].to_i
   erb :edit_list, layout: :layout
@@ -130,10 +129,20 @@ end
 
 # deletes a list
 post "/lists/:list_id/delete" do
-  session["success"] = "The list has been deleted" 
   @deleted = @lists.delete_at params['list_id'].to_i
-  redirect "/lists"
+
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    "/lists"
+  else
+    session["success"] = "The list has been deleted" 
+    redirect "/lists"
+  end
 end
+
+# def next_todo_id(todos)
+#   max = @list.map { |todo| binding.pry; todo[:id] }.max || 0
+#   max + 1
+# end
 
 # add a new todo to a list
 post "/lists/:list_id/todos" do
@@ -147,6 +156,7 @@ post "/lists/:list_id/todos" do
     session[:error] = error
     erb :single_list, layout: :layout
   else
+    #id = next_todo_id(@list[:todos])
     @list[:todos] << { name: @new_todo, completed: false }
     session[:success] = "The todo item has been added."
     redirect "/lists/#{params['list_id']}"
@@ -158,8 +168,13 @@ post "/lists/:list_id/todos/:todo_id/delete_todo" do
   @todo_id = params['todo_id'].to_i
 
   @lists[@list_id][:todos].delete_at @todo_id
-  session[:success] = "The todo item has been deleted"
-  redirect "/lists/" + params['list_id'] 
+
+  if env["HTTP_X_REQUESTED_WITH"] == 'XMLHttpRequest'
+    status 204
+  else
+    session[:success] = "The todo item has been deleted"
+    redirect "/lists/" + params['list_id'] 
+  end
 end
 
 post "/lists/:list_id/todos/:todo_id/complete_todo" do
