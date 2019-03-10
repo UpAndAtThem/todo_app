@@ -57,7 +57,7 @@ helpers do
   end
 
   def load_list(index)
-    list = @lists[index]
+    list = @lists.detect { |list| list[:id] == index }
     return list if list
 
     session[:error] = "The desired list could not be found"
@@ -81,6 +81,11 @@ get "/lists" do
   erb :lists, layout: :layout
 end
 
+def next_list_id(lists)
+  max = lists.map{ |list| list[:id] }.max || 0
+  max + 1
+end
+
 post "/lists" do
   list_name = @params['list_name'].strip
   error = list_name_error(list_name)
@@ -89,7 +94,8 @@ post "/lists" do
     session[:error] = error
     erb :new_list, layout: :layout
   else
-    session[:lists] << {name: @params["list_name"], todos: []}
+    id = next_list_id @lists
+    session[:lists] << {id: id, name: @params["list_name"], todos: []}
     session[:success] = "The list has been created."
     redirect "/lists"
   end
@@ -127,7 +133,7 @@ end
 
 # deletes a list
 post "/lists/:list_id/delete" do
-  @deleted = @lists.delete_at params['list_id'].to_i
+  @deleted = @lists.delete_if { |list| list[:id] == params['list_id'].to_i }
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     "/lists"
@@ -145,9 +151,9 @@ end
 # add a new todo to a list
 post "/lists/:list_id/todos" do
   @list_id = params['list_id'].to_i
-  @list = session[:lists][@list_id]
+  @list = session[:lists].detect{ |list| list[:id] == @list_id }
+  
   @new_todo = params['todo'].strip
-
   error = todo_name_error @new_todo
 
   if error
@@ -156,6 +162,7 @@ post "/lists/:list_id/todos" do
   else
     id = next_todo_id(@list[:todos])
     @list[:todos] << { id: id, name: @new_todo, completed: false }
+
     session[:success] = "The todo item has been added."
     redirect "/lists/#{params['list_id']}"
   end
@@ -178,8 +185,9 @@ end
 post "/lists/:list_id/todos/:todo_id/complete_todo" do
   @list_id = params['list_id'].to_i
   @todo_id = params['todo_id'].to_i
+  @list =  @lists.detect { |list| list[:id] == @list_id}
+  @todo = @list[:todos].detect { |todo| todo[:id] == @todo_id}
 
-  @todo = @lists[@list_id][:todos][@todo_id]
   @todo[:completed] = to_bool params['completed']
   session[:success] = "The todo has been updated"
   redirect "/lists/#{params['list_id']}"
