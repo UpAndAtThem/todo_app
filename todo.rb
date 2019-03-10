@@ -73,10 +73,8 @@ def has_todos?(todos)
   todos.count > 0
 end
 
-HOME_PAGE = "/lists"
-
 get "/" do
-  redirect HOME_PAGE
+  redirect "/lists"
 end
 
 get "/lists" do
@@ -139,10 +137,10 @@ post "/lists/:list_id/delete" do
   end
 end
 
-# def next_todo_id(todos)
-#   max = @list.map { |todo| binding.pry; todo[:id] }.max || 0
-#   max + 1
-# end
+def next_todo_id(todos)
+  max = todos.map { |todo| todo[:id] }.max || 0
+  max + 1
+end
 
 # add a new todo to a list
 post "/lists/:list_id/todos" do
@@ -156,8 +154,8 @@ post "/lists/:list_id/todos" do
     session[:error] = error
     erb :single_list, layout: :layout
   else
-    #id = next_todo_id(@list[:todos])
-    @list[:todos] << { name: @new_todo, completed: false }
+    id = next_todo_id(@list[:todos])
+    @list[:todos] << { id: id, name: @new_todo, completed: false }
     session[:success] = "The todo item has been added."
     redirect "/lists/#{params['list_id']}"
   end
