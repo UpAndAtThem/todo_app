@@ -1,5 +1,5 @@
 require "sinatra"
-require "sinatra/reloader" if development?
+require "sinatra/reloader" #if development?
 require "sinatra/content_for"
 require "tilt/erubis"
 
@@ -56,8 +56,8 @@ helpers do
     complete.each { |todo| yield todo, list[:todos].index(todo) }
   end
 
-  def load_list(index)
-    list = @lists.detect { |list| list[:id] == index }
+  def load_list(list_id)
+    list = @lists.detect { |list| list[:id] == list_id }
     return list if list
 
     session[:error] = "The desired list could not be found"
@@ -172,7 +172,8 @@ post "/lists/:list_id/todos/:todo_id/delete_todo" do
   @list_id = params['list_id'].to_i
   @todo_id = params['todo_id'].to_i
 
-  @lists[@list_id][:todos].delete_at @todo_id
+  @list = @lists.detect { |list| list[:id] == @list_id }
+  @list[:todos].delete_if { |todo| todo[:id] == @todo_id }
 
   if env["HTTP_X_REQUESTED_WITH"] == 'XMLHttpRequest'
     status 204
@@ -190,7 +191,7 @@ post "/lists/:list_id/todos/:todo_id/complete_todo" do
 
   @todo[:completed] = to_bool params['completed']
   session[:success] = "The todo has been updated"
-  redirect "/lists/#{params['list_id']}"
+  redirect "/lists/#{@list_id}"
 end
 
 post "/lists/:list_id/todos/mark_all_complete" do
