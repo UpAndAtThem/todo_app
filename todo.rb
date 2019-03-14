@@ -45,8 +45,8 @@ helpers do
   def sort_lists(lists, &block)
     complete, incomplete = lists.partition { |list| list_completed? list }
 
-    incomplete.each { |list| yield list, lists.index(list) }
-    complete.each { |list| yield list, lists.index(list) }
+    incomplete.each { |list| yield list }
+    complete.each { |list| yield list }
   end
 
   def sort_todos(list, &block)
@@ -87,8 +87,8 @@ def next_list_id(lists)
 end
 
 post "/lists" do
-  list_name = @params['list_name'].strip
-  error = list_name_error(list_name)
+  @list = @params['list_name'].strip
+  error = list_name_error(@list)
 
   if error
     session[:error] = error

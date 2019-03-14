@@ -23,6 +23,5 @@ $(function() {
       });
     }
   });
-  var thisy = $(this)[0]["lastModified"]
-  console.log(thisy);
+  
 });
